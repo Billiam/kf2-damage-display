@@ -41,7 +41,7 @@ final function DrawNumberMsg( Canvas Canvas )
 	local float T,ThisDot,FontScale,XS,YS,CameraDot;
 	local vector V;
 	local string S;
-	
+
 	LocalOwner.GetPlayerViewPoint(PLCameraLoc,PLCameraRot);
 	PLCameraDir = vector(PLCameraRot);
 	CameraDot = (PLCameraDir Dot PLCameraLoc);
@@ -72,10 +72,10 @@ final function DrawNumberMsg( Canvas Canvas )
 						S = "+"$string(-Numbers[i].Amount);
 					else S = "-"$string(Numbers[i].Amount);
 					if( Numbers[i].Amount==0 )
-						Canvas.SetDrawColor(220,220,15,255);
+						Canvas.SetDrawColor(220,0,0,255);
 					else if( Numbers[i].Amount<0 )
 						Canvas.SetDrawColor(15,255,15,255);
-					else Canvas.SetDrawColor(220,0,0,255);
+					else Canvas.SetDrawColor(220,220,220,255);
 					break;
 				}
 				if( T>2.f )
