@@ -54,7 +54,7 @@ final function DrawNumberMsg( Canvas Canvas )
 	PLCameraDir = vector(PLCameraRot);
 	CameraDot = (PLCameraDir Dot PLCameraLoc);
 
-	FontScale = Canvas.ClipY / 2.f;
+	FontScale = Canvas.ClipY / 800.f;
 	Canvas.Font = class'KFGameEngine'.Static.GetKFCanvasFont();
 
 	for( i=0; i<Numbers.Length; ++i )
@@ -67,13 +67,16 @@ final function DrawNumberMsg( Canvas Canvas )
 		}
 		V = Numbers[i].Pos+Numbers[i].Vel*T;
 		Numbers[i].Vel.Z -= 3.f*T;
-		ThisDot = (PLCameraDir Dot V) - CameraDot;
-		if( ThisDot>0.f && ThisDot<1500.f )
+
+		ThisDot = FMin((PLCameraDir Dot V) - CameraDot, 2000.f) / 2000.f;
+
+		if( ThisDot>0.f )
 		{
 			V = Canvas.Project(V);
 			if( V.X>0 && V.Y>0 && V.X<Canvas.ClipX && V.Y<Canvas.ClipY )
 			{
-				ThisDot = (FontScale/ThisDot);
+				ThisDot = FontScale - ThisDot * FontScale * 0.5;
+
 				switch( Numbers[i].Type )
 				{
 				case 0: // Pawn damage.
@@ -83,21 +86,21 @@ final function DrawNumberMsg( Canvas Canvas )
 					break;
 				}
 
-				Canvas.SetDrawColor(0, 0, 0, 255);
+				Canvas.SetDrawColor(0, 0, 0, 204);
 				if( T>0.7 )
-					Canvas.DrawColor.A = (1.f-T)*255.f;
+					Canvas.DrawColor.A = (1.f-T)*204.f;
 				Canvas.TextSize(S,XS,YS,ThisDot,ThisDot);
 				Canvas.SetPos(V.X-XS*0.5 + 1,V.Y-YS*0.5 + 1);
-				Canvas.DrawText(S,,ThisDot,ThisDot);
+				Canvas.DrawText(S,,ThisDot, ThisDot);
 
 				if( Numbers[i].Amount==0 )
-					Canvas.SetDrawColor(220,0,0,255);
+					Canvas.SetDrawColor(220,0,0,204);
 				else if( Numbers[i].Amount<0 )
-					Canvas.SetDrawColor(15,255,15,255);
-				else Canvas.SetDrawColor(220,220,220,255);
+					Canvas.SetDrawColor(15,255,15,204);
+				else Canvas.SetDrawColor(240,240,240,204);
 
 				if( T>0.7 )
-					Canvas.DrawColor.A = (1.f-T)*255.f;
+					Canvas.DrawColor.A = (1.f-T)*204.f;
 				Canvas.TextSize(S,XS,YS,ThisDot,ThisDot);
 				Canvas.SetPos(V.X-XS*0.5,V.Y-YS*0.5);
 				Canvas.DrawText(S,,ThisDot,ThisDot);
