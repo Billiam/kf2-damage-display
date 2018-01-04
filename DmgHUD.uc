@@ -80,13 +80,22 @@ final function DrawNumberMsg( Canvas Canvas )
 					if( Numbers[i].Amount<0 )
 						S = "+"$string(-Numbers[i].Amount);
 					else S = string(Numbers[i].Amount);
-					if( Numbers[i].Amount==0 )
-						Canvas.SetDrawColor(220,0,0,255);
-					else if( Numbers[i].Amount<0 )
-						Canvas.SetDrawColor(15,255,15,255);
-					else Canvas.SetDrawColor(220,220,220,255);
 					break;
 				}
+
+				Canvas.SetDrawColor(0, 0, 0, 255);
+				if( T>0.7 )
+					Canvas.DrawColor.A = (1.f-T)*255.f;
+				Canvas.TextSize(S,XS,YS,ThisDot,ThisDot);
+				Canvas.SetPos(V.X-XS*0.5 + 1,V.Y-YS*0.5 + 1);
+				Canvas.DrawText(S,,ThisDot,ThisDot);
+
+				if( Numbers[i].Amount==0 )
+					Canvas.SetDrawColor(220,0,0,255);
+				else if( Numbers[i].Amount<0 )
+					Canvas.SetDrawColor(15,255,15,255);
+				else Canvas.SetDrawColor(220,220,220,255);
+
 				if( T>0.7 )
 					Canvas.DrawColor.A = (1.f-T)*255.f;
 				Canvas.TextSize(S,XS,YS,ThisDot,ThisDot);
