@@ -24,8 +24,8 @@ function PostRender(Canvas Canvas)
 
 final function AddNumberMsg( int Amount, vector Pos )
 {
-	local int i;
 	local vector velocity;
+	local int i;
 
 	i = Numbers.Length;
 	while( i>18 ) // don't overflow this that much...
@@ -35,11 +35,12 @@ final function AddNumberMsg( int Amount, vector Pos )
 		Numbers.Remove(0,1);
 		i = Numbers.Length;
 	}
+
 	velocity = vect(0, 0, 0);
 	velocity.X = FRand() * 400.f - 200.f;
 	velocity.Y = FRand() * 400.f - 200.f;
 	velocity.Z = FRand() * 200.f + 150.f;
-	
+
 	Numbers.Length = i+1;
 	Numbers[i].Vel = velocity;
 	Numbers[i].Amount = Amount;
@@ -72,14 +73,12 @@ final function DrawNumberMsg( Canvas Canvas )
 
 		if( T>Duration )
 		{
-			`Log("Duration exceeded: " $ string(i) $ " - " $ string(T))
 			Numbers.remove(i, 1);
 			continue;
 		}
+
 		AnimPercent = T/Duration;
-		Numbers[i].Pos += Numbers[i].Vel * Dt;
 		V = Numbers[i].Pos;
-		Numbers[i].Vel.Z -= 700.f * Dt;
 
 		ThisDot = FMin((PLCameraDir Dot V) - CameraDot, 2000.f) / 2000.f;
 
@@ -114,6 +113,9 @@ final function DrawNumberMsg( Canvas Canvas )
 				Canvas.DrawText(S,,ThisDot,ThisDot);
 			}
 		}
+		
+		Numbers[i].Pos += Numbers[i].Vel * Dt;
+		Numbers[i].Vel.Z -= 700.f * Dt;
 	}
 }
 

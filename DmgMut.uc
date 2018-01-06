@@ -96,6 +96,7 @@ function NetDamage(int OriginalDamage, out int Damage, Pawn Injured, Controller 
 		LastHitPawn = Injured;
 		LastHitHP = Injured.Health;
 		LastDamagePosition = HitLocation;
+        `Log("Hit: " $ string(HitLocation));
 		LastDamageInstigator = PlayerController(InstigatedBy);
 		SetTimer(0.001,false,'CheckDamageDone');
 	}
