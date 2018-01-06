@@ -49,10 +49,10 @@ simulated event ReplicatedEvent(name VarName)
 		InitOwner(PlayerOwner);
 }
 
-simulated unreliable client function ClientPopupMessage( int A, vector Pos, byte Type )
+simulated unreliable client function ClientPopupMessage( int A, vector Pos)
 {
 	if( ClientHUD!=None )
-		ClientHUD.AddNumberMsg(A,Pos,Type);
+		ClientHUD.AddNumberMsg(A,Pos);
 }
 
 defaultproperties

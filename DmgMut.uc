@@ -119,7 +119,7 @@ function CheckDamageDone()
 			if( LastHitPawn!=None )
 				i = LastHitHP - Max(LastHitPawn.Health,0);
 			else i = LastHitHP;
-			CacheUser.Rep.ClientPopupMessage(i,LastDamagePosition,0);
+			CacheUser.Rep.ClientPopupMessage(i,LastDamagePosition);
 		}
 		LastDamageInstigator = None;
 	}

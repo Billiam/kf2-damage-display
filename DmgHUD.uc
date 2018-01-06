@@ -4,15 +4,17 @@ var transient PlayerController LocalOwner;
 var transient vector PLCameraLoc,PLCameraDir;
 var transient rotator PLCameraRot;
 
+const Duration = 1.f;
+
 struct FNumberedMsg
 {
 	var int Amount;
 	var vector Pos;
 	var vector Vel;
 	var float Time;
-	var byte Type;
 };
 var transient array<FNumberedMsg> Numbers;
+var transient float RenderTime;
 
 function PostRender(Canvas Canvas)
 {
@@ -20,36 +22,43 @@ function PostRender(Canvas Canvas)
 		DrawNumberMsg(Canvas);
 }
 
-final function AddNumberMsg( int Amount, vector Pos, byte Type )
+final function AddNumberMsg( int Amount, vector Pos )
 {
 	local int i;
 	local vector velocity;
 
 	i = Numbers.Length;
-	if( i>18 ) // don't overflow this that much...
+	while( i>18 ) // don't overflow this that much...
 	{
+		`Log("Removing entry: " $ Numbers.length);
+
 		Numbers.Remove(0,1);
 		i = Numbers.Length;
 	}
 	velocity = vect(0, 0, 0);
-	velocity.X = FRand() * 200.f - 100.f;
-	velocity.Y = FRand() * 200.f - 100.f;
-	velocity.Z = FRand() * 200.f + 80.f;
-
+	velocity.X = FRand() * 400.f - 200.f;
+	velocity.Y = FRand() * 400.f - 200.f;
+	velocity.Z = FRand() * 200.f + 150.f;
+	
 	Numbers.Length = i+1;
 	Numbers[i].Vel = velocity;
 	Numbers[i].Amount = Amount;
 	Numbers[i].Pos = Pos;
 	Numbers[i].Time = LocalOwner.WorldInfo.TimeSeconds;
-	Numbers[i].Type = Type;
 }
+
 final function DrawNumberMsg( Canvas Canvas )
 {
 	local int i;
-	local float T,ThisDot,FontScale,XS,YS,CameraDot;
+	local float T,Dt,ThisDot,FontScale,XS,YS,CameraDot,AnimPercent;
 	local vector V;
 	local string S;
 
+	if (RenderTime > 0) {
+		Dt = LocalOwner.WorldInfo.TimeSeconds - RenderTime;
+	}
+
+	RenderTime = LocalOwner.WorldInfo.TimeSeconds;
 	LocalOwner.GetPlayerViewPoint(PLCameraLoc,PLCameraRot);
 	PLCameraDir = vector(PLCameraRot);
 	CameraDot = (PLCameraDir Dot PLCameraLoc);
@@ -57,16 +66,20 @@ final function DrawNumberMsg( Canvas Canvas )
 	FontScale = Canvas.ClipY / 800.f;
 	Canvas.Font = class'KFGameEngine'.Static.GetKFCanvasFont();
 
-	for( i=0; i<Numbers.Length; ++i )
+	for( i=Numbers.length - 1; i>=0; i-- )
 	{
-		T = LocalOwner.WorldInfo.TimeSeconds-Numbers[i].Time;
-		if( T>1.f )
+		T = LocalOwner.WorldInfo.TimeSeconds - Numbers[i].Time;
+
+		if( T>Duration )
 		{
-			Numbers.Remove(i--,1);
+			`Log("Duration exceeded: " $ string(i) $ " - " $ string(T))
+			Numbers.remove(i, 1);
 			continue;
 		}
-		V = Numbers[i].Pos+Numbers[i].Vel*T;
-		Numbers[i].Vel.Z -= 3.f*T;
+		AnimPercent = T/Duration;
+		Numbers[i].Pos += Numbers[i].Vel * Dt;
+		V = Numbers[i].Pos;
+		Numbers[i].Vel.Z -= 700.f * Dt;
 
 		ThisDot = FMin((PLCameraDir Dot V) - CameraDot, 2000.f) / 2000.f;
 
@@ -77,18 +90,13 @@ final function DrawNumberMsg( Canvas Canvas )
 			{
 				ThisDot = FontScale - ThisDot * FontScale * 0.5;
 
-				switch( Numbers[i].Type )
-				{
-				case 0: // Pawn damage.
-					if( Numbers[i].Amount<0 )
-						S = "+"$string(-Numbers[i].Amount);
-					else S = string(Numbers[i].Amount);
-					break;
-				}
+				if( Numbers[i].Amount<0 )
+					S = "+"$string(-Numbers[i].Amount);
+				else S = string(Numbers[i].Amount);
 
 				Canvas.SetDrawColor(0, 0, 0, 204);
-				if( T>0.7 )
-					Canvas.DrawColor.A = (1.f-T)*204.f;
+				if(AnimPercent > 0.7 )
+					Canvas.DrawColor.A = (1-AnimPercent)/0.3*204.f;
 				Canvas.TextSize(S,XS,YS,ThisDot,ThisDot);
 				Canvas.SetPos(V.X-XS*0.5 + 1,V.Y-YS*0.5 + 1);
 				Canvas.DrawText(S,,ThisDot, ThisDot);
@@ -99,8 +107,8 @@ final function DrawNumberMsg( Canvas Canvas )
 					Canvas.SetDrawColor(15,255,15,204);
 				else Canvas.SetDrawColor(240,240,240,204);
 
-				if( T>0.7 )
-					Canvas.DrawColor.A = (1.f-T)*204.f;
+				if( AnimPercent > 0.7 )
+					Canvas.DrawColor.A = (1-AnimPercent)/0.3*204.f;
 				Canvas.TextSize(S,XS,YS,ThisDot,ThisDot);
 				Canvas.SetPos(V.X-XS*0.5,V.Y-YS*0.5);
 				Canvas.DrawText(S,,ThisDot,ThisDot);
