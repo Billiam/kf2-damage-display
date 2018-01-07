@@ -18,8 +18,15 @@ var transient float RenderTime;
 
 function PostRender(Canvas Canvas)
 {
+	local float Dt;
+
+	if (RenderTime > 0) {
+		Dt = LocalOwner.WorldInfo.TimeSeconds - RenderTime;
+	}
+	RenderTime = LocalOwner.WorldInfo.TimeSeconds;
+
 	if( Numbers.Length>0 )
-		DrawNumberMsg(Canvas);
+		DrawNumberMsg(Canvas, Dt);
 }
 
 final function AddNumberMsg( int Amount, vector Pos )
@@ -30,8 +37,6 @@ final function AddNumberMsg( int Amount, vector Pos )
 	i = Numbers.Length;
 	while( i>18 ) // don't overflow this that much...
 	{
-		`Log("Removing entry: " $ Numbers.length);
-
 		Numbers.Remove(0,1);
 		i = Numbers.Length;
 	}
@@ -48,18 +53,13 @@ final function AddNumberMsg( int Amount, vector Pos )
 	Numbers[i].Time = LocalOwner.WorldInfo.TimeSeconds;
 }
 
-final function DrawNumberMsg( Canvas Canvas )
+final function DrawNumberMsg( Canvas Canvas, float Dt )
 {
 	local int i;
-	local float T,Dt,ThisDot,FontScale,XS,YS,CameraDot,AnimPercent;
+	local float T,FontScale,XS,YS,CameraDot,AnimPercent,Dist,RenderSize;
 	local vector V;
 	local string S;
 
-	if (RenderTime > 0) {
-		Dt = LocalOwner.WorldInfo.TimeSeconds - RenderTime;
-	}
-
-	RenderTime = LocalOwner.WorldInfo.TimeSeconds;
 	LocalOwner.GetPlayerViewPoint(PLCameraLoc,PLCameraRot);
 	PLCameraDir = vector(PLCameraRot);
 	CameraDot = (PLCameraDir Dot PLCameraLoc);
@@ -80,14 +80,14 @@ final function DrawNumberMsg( Canvas Canvas )
 		AnimPercent = T/Duration;
 		V = Numbers[i].Pos;
 
-		ThisDot = FMin((PLCameraDir Dot V) - CameraDot, 2000.f) / 2000.f;
+		Dist = (PLCameraDir Dot V) - CameraDot;
 
-		if( ThisDot>0.f )
+		if( Dist > 0.f )
 		{
 			V = Canvas.Project(V);
 			if( V.X>0 && V.Y>0 && V.X<Canvas.ClipX && V.Y<Canvas.ClipY )
 			{
-				ThisDot = FontScale - ThisDot * FontScale * 0.5;
+				RenderSize = FontScale - (FMin(Dist, 1500.f) / 1500.f) * FontScale * 0.5;
 
 				if( Numbers[i].Amount<0 )
 					S = "+"$string(-Numbers[i].Amount);
@@ -96,9 +96,9 @@ final function DrawNumberMsg( Canvas Canvas )
 				Canvas.SetDrawColor(0, 0, 0, 204);
 				if(AnimPercent > 0.7 )
 					Canvas.DrawColor.A = (1-AnimPercent)/0.3*204.f;
-				Canvas.TextSize(S,XS,YS,ThisDot,ThisDot);
+				Canvas.TextSize(S,XS,YS,RenderSize,RenderSize);
 				Canvas.SetPos(V.X-XS*0.5 + 1,V.Y-YS*0.5 + 1);
-				Canvas.DrawText(S,,ThisDot, ThisDot);
+				Canvas.DrawText(S,,RenderSize,RenderSize);
 
 				if( Numbers[i].Amount==0 )
 					Canvas.SetDrawColor(220,0,0,204);
@@ -108,12 +108,11 @@ final function DrawNumberMsg( Canvas Canvas )
 
 				if( AnimPercent > 0.7 )
 					Canvas.DrawColor.A = (1-AnimPercent)/0.3*204.f;
-				Canvas.TextSize(S,XS,YS,ThisDot,ThisDot);
 				Canvas.SetPos(V.X-XS*0.5,V.Y-YS*0.5);
-				Canvas.DrawText(S,,ThisDot,ThisDot);
+				Canvas.DrawText(S,,RenderSize,RenderSize);
 			}
 		}
-		
+
 		Numbers[i].Pos += Numbers[i].Vel * Dt;
 		Numbers[i].Vel.Z -= 700.f * Dt;
 	}
